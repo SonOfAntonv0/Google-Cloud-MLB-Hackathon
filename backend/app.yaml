@@ -1,7 +1,10 @@
-runtime: python311  # Use Python 3.11 or latest version
+runtime: python  # Use Python 3.11 or latest version
 entrypoint: gunicorn -b :$PORT app:app
 instance_class: F4_1G  # Choose instance size
-
+env: flex
+runtime_config:
+    operating_system: "ubuntu22"
+    runtime_version: "3.12"
 env_variables:
   GOOGLE_CLOUD_PROJECT: "cloud-hackathon-venky"
   SMTP_SERVER: "smtp.gmail.com"
@@ -11,13 +14,9 @@ env_variables:
   GENAI_API_KEY: "AIzaSyAxlDjY7RTAfjWrzlEdnpuEFUiOUj9Pe54"
   TOPIC_NAME: "cron-topic"
   REGION: "us-central1"
-
 automatic_scaling:
-  target_cpu_utilization: 0.9
-  min_instances: 3
-  max_instances: 6
-  min_idle_instances: 4
-
+  min_num_instances: 1
+  max_num_instances: 3
 handlers:
   - url: /socket.io/.* 
     script: auto

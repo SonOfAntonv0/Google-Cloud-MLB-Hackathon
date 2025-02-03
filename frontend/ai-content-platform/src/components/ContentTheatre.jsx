@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { io } from "socket.io-client";
 
 // ✅ Force WebSocket transport to avoid polling issues
@@ -21,31 +22,19 @@ const ContentTheatre = () => {
   useEffect(() => {
     console.log("🔄 Connecting to WebSocket...");
 
-    // ✅ Fetch existing content when component mounts using fetch
-    fetch(`/api/content-theatre`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(async (data) => {
-        setVideoUrl(data.videoUrl);
+    // ✅ Fetch existing content when component mounts
+    axios.get(`/api/content-theatre`)
+      .then(async (response) => {
+        setVideoUrl(response.data.videoUrl);
 
-        if (data.insightsUrl) {
-          try {
-            const insightsResponse = await fetch(data.insightsUrl);
-            if (!insightsResponse.ok) {
-              throw new Error(`HTTP error! Status: ${insightsResponse.status}`);
-            }
-            const insightsData = await insightsResponse.json();
-            setInsights(insightsData.response);
-          } catch (err) {
-            console.error("❌ Error fetching insights:", err);
-          }
+        if (response.data.insightsUrl) {
+          const insightsResponse = await axios.get(response.data.insightsUrl);
+          setInsights(insightsResponse.data.response);
         }
       })
-      .catch(error => console.error("❌ Error fetching content:", error));
+      .catch((error) => {
+        console.error("❌ Error fetching content:", error);
+      });
 
     // ✅ Listen for new content being ready
     socket.on("content_ready", async (data) => {
@@ -53,12 +42,8 @@ const ContentTheatre = () => {
 
       setVideoUrl(data.videoUrl);
       try {
-        const insightsResponse = await fetch(data.insightsUrl);
-        if (!insightsResponse.ok) {
-          throw new Error(`HTTP error! Status: ${insightsResponse.status}`);
-        }
-        const insightsData = await insightsResponse.json();
-        setInsights(insightsData.response);
+        const insightsResponse = await axios.get(data.insightsUrl);
+        setInsights(insightsResponse.data.response);
       } catch (err) {
         console.error("❌ Error fetching insights:", err);
       }

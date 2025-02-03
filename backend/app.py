@@ -12,41 +12,9 @@ from google.cloud import firestore
 db = firestore.Client()
 
 app = Flask(__name__)
-CORS(app)
-
-# Second layer: Detailed CORS headers through middleware
-# @app.after_request
-# def add_cors_headers(response):
-#     # Get the origin from the request
-#     origin = request.headers.get('Origin')
-    
-#     if origin == "https://cloud-hackathon-venky.web.app":
-#         # Set specific headers for your trusted origin
-#         response.headers['Access-Control-Allow-Origin'] = origin
-#         response.headers['Access-Control-Allow-Credentials'] = 'true'
-#         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-#         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-#         # Add cache control for OPTIONS requests
-#         if request.method == 'OPTIONS':
-#             response.headers['Access-Control-Max-Age'] = '3600'
-    
-#     return response
-
-# # Third layer: Handle OPTIONS requests explicitly
-# @app.route('/', methods=['OPTIONS'])
-# @app.route('/<path:path>', methods=['OPTIONS'])
-# def handle_options(path=''):
-#     response = app.make_default_options_response()
-#     # Add the CORS headers to OPTIONS responses
-#     return add_cors_headers(response)
-socketio = SocketIO(app, cors_allowed_origins="https://cloud-hackathon-venky.web.app", async_mode='threading', logger=True, engineio_logger=True, transports=["websocket", "polling"])
-
-# socketio = SocketIO(app, 
-#     cors_allowed_origins="*",  # Remove trailing space
-#     async_mode='threading',  # Change from 'threading' to 'eventlet'
-#     logger=True, 
-#     engineio_logger=True
-# )
+CORS(app, origins="*", supports_credentials=True)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', logger=True, engineio_logger=True, transports=["websocket", "polling"],     ping_timeout=600,  # Increase ping timeout
+    ping_interval=60)
 
 @app.route("/")
 def home():
@@ -224,16 +192,6 @@ def handle_disconnect():
 def handle_content_ready(data):
     print(f"📩 Received content_ready event: {data}")
 
-@socketio.on_error()
-def error_handler(e):
-    print(f"SocketIO error: {str(e)}")
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'https://cloud-hackathon-venky.web.app')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)
