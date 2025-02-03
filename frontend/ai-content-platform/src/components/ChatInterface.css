@@ -1,0 +1,41 @@
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #e63946; /* MLB red */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    animation: fadeInOut 5s;
+  }
+  
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    10%, 90% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  
+  .job-button {
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #e63946; /* MLB red */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .job-button:hover {
+    background-color: #b22234; /* Darker red */
+  }
+  

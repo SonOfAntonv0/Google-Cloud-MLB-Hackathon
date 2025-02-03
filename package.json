@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@emotion/react": "^11.x.x",
+    "@emotion/styled": "^11.x.x",
+    "@mui/material": "^5.x.x",
+    "@mui/system": "^5.x.x",
+    "@mui/icons-material": "^5.x.x",
+    "react": "^18.x.x",
+    "react-dom": "^18.x.x"
+  },
+  "devDependencies": {
+    "@types/react": "^18.x.x",
+    "@types/node": "^16.x.x"
+  }
+}

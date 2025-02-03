@@ -1,0 +1,49 @@
+.content-subscriptions {
+    text-align: center;
+  }
+  
+  .content-subscriptions h2 {
+    margin-bottom: 20px;
+  }
+  
+  .content-subscriptions ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .content-subscriptions li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: #333;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  .content-subscriptions li.disabled {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+  
+  .subscription-actions button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #e63946; /* MLB red */
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .subscription-actions button:hover {
+    background-color: #b22234; /* Darker MLB red */
+  }
+  
+  .loading {
+    margin: 20px;
+    font-size: 18px;
+    color: #61dafb; /* React blue */
+  }
+  

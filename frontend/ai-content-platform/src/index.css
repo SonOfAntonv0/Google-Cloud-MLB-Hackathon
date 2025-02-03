@@ -1,0 +1,16 @@
+body {
+  margin: 0;
+  font-family: "Arial", sans-serif;
+  background: linear-gradient(to bottom, #0d0d0d, #1a1a1a);
+  color: white;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+  filter: brightness(1.2);
+}
