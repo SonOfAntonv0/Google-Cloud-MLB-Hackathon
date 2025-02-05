@@ -8,7 +8,8 @@ import json
 from google.cloud import storage
 
 def get_ai_insights(video_path, csv_paths, language, is_team):
-    genai.configure(api_key="AIzaSyAxlDjY7RTAfjWrzlEdnpuEFUiOUj9Pe54")
+    API_KEY = os.getenv("GENAI_API_KEY")
+    genai.configure(api_key=API_KEY)
     video_file = genai.upload_file(video_path)
 
     while video_file.state.name == "PROCESSING":
