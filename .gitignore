@@ -59,3 +59,7 @@ ENV/
 .vscode/
 *.swp
 *.swo
+frontend/.gitignore
+frontend/ai-content-platform/.firebase/hosting.ZGlzdA.cache
+frontend/ai-content-platform/.firebase/hosting.ZGlzdA.cache
+backend/app.yaml

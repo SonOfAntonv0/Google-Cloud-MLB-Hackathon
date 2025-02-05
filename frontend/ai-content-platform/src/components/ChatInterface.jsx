@@ -26,7 +26,7 @@ const ChatInterface = () => {
     setMessages([...messages, userMessage]); // Add user message to chat
 
     try {
-      const response = await axios.post("https://v1-dot-cloud-hackathon-venky.ue.r.appspot.com/api/chat", {
+      const response = await axios.post("http://127.0.0.1:8080/api/chat", {
         message: input,
         convo_id: convoId, // ✅ Send convo_id with request
       });

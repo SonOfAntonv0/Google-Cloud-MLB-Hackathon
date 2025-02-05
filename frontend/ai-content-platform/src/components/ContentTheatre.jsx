@@ -3,7 +3,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 // ✅ Force WebSocket transport to avoid polling issues
-const socket = io("https://cloud-hackathon-venky.ue.r.appspot.com", {
+const socket = io("http://127.0.0.1:8080", {
   transports: ["websocket", "polling"], // Force WebSocket only
   reconnection: true,
   reconnectionAttempts: 5,
@@ -23,12 +23,12 @@ const ContentTheatre = () => {
     console.log("🔄 Connecting to WebSocket...");
 
     // ✅ Fetch existing content when component mounts
-    axios.get(`/api/content-theatre`)
+    axios.get(`http://127.0.0.1:8080/api/content-theatre`, { withCredentials: true })
       .then(async (response) => {
         setVideoUrl(response.data.videoUrl);
-
+          console.log(`RESPONSEEEEEE ✅✅✅✅✅✅✅✅ ${JSON.stringify(response)}`)
         if (response.data.insightsUrl) {
-          const insightsResponse = await axios.get(response.data.insightsUrl);
+          const insightsResponse = await axios.get(response.data.insightsUrl, { withCredentials: false });
           setInsights(insightsResponse.data.response);
         }
       })
@@ -54,6 +54,19 @@ const ContentTheatre = () => {
     };
   }, []);
 
+  const formatInsights = (text) => {
+    // Split text into sections based on "**" markers
+    return text.split('**').map((section, index) => {
+      // Check if this is a title section (every odd index)
+      const isTitle = index % 2 === 1;
+      return (
+        <span key={index} className={isTitle ? 'insight-title' : 'insight-content'}>
+          {section}
+        </span>
+      );
+    });
+  };
+
   return (
     <div className="content-theatre">
       <h2>Content Theatre</h2>
@@ -69,13 +82,15 @@ const ContentTheatre = () => {
         <p>Loading video...</p>
       )}
 
-      {insights ? (
+{insights ? (
         <div className="ai-insights">
-          <h3>AI Insights</h3>
-          <p>{insights}</p>
+          <h3 className="insights-title">AI Insights</h3>
+          <div className="insights-content">
+            {formatInsights(insights)}
+          </div>
         </div>
       ) : (
-        <p>Loading insights...</p>
+        <p className="loading-spinner">Loading insights...</p>
       )}
     </div>
   );

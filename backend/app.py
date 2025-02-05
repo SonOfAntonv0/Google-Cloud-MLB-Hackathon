@@ -1,3 +1,9 @@
+from gevent import monkey, spawn, sleep, joinall
+monkey.patch_all()
+
+# Add this before creating the Flask app
+import grpc.experimental.gevent
+grpc.experimental.gevent.init_gevent()
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from genai_utils import get_llm_response, is_convo_done, get_params
@@ -7,14 +13,44 @@ from flask_socketio import SocketIO
 import threading
 import base64
 import json
-from google.cloud import firestore 
-
-db = firestore.Client()
-
+from google.cloud import firestore
+from google.cloud import firestore
+from google.api_core import retry
+from notify import send_email
+import os
+#
 app = Flask(__name__)
-CORS(app, origins="*", supports_credentials=True)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', logger=True, engineio_logger=True, transports=["websocket", "polling"],     ping_timeout=600,  # Increase ping timeout
-    ping_interval=60)
+#CORS(app, origins="*", supports_credentials=True)
+CORS(app, origins=["https://cloud-hackathon-venky.web.app","http://localhost:5173"], supports_credentials=True)
+# socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', logger=True, engineio_logger=True, transports=["websocket", "polling"], ping_timeout=600,  # Increase ping timeout
+#     ping_interval=60)
+
+socketio = SocketIO(
+    app, 
+    cors_allowed_origins=["https://cloud-hackathon-venky.web.app", "http://localhost:5173"], 
+    async_mode='gevent',
+    logger=True, 
+    engineio_logger=True,
+    transports=["websocket", "polling"],
+    ping_timeout=600,
+    ping_interval=60,
+    message_queue='redis://' if os.environ.get('GAE_ENV', '').startswith('standard') else None
+)
+
+#load_dotenv()
+class FirestoreClient:
+    _instance = None
+    
+    @classmethod
+    def get_client(cls):
+        if cls._instance is None:
+            cls._instance = firestore.Client()
+        return cls._instance
+
+    @staticmethod
+    @retry.Retry(predicate=retry.if_exception_type(Exception))
+    def retry_operation(operation, *args, **kwargs):
+        return operation(*args, **kwargs)
 
 @app.route("/")
 def home():
@@ -24,6 +60,7 @@ def home():
 @app.route("/api/chat", methods=["POST"])
 def chat():
     try:
+        db = FirestoreClient.get_client()
         user_message = request.json.get("message", "")
 
         convo_id = request.json.get("convo_id", None)
@@ -44,8 +81,10 @@ def chat():
 
         if is_convo_done_flag == 'yes':
             delivery_type = val.split(' ')[1].lower()
-            job_thread = threading.Thread(target=kickstart_job, args=(convo_id, delivery_type,))
-            job_thread.start()
+
+            # Store the greenlet so we can track it
+            joinall([spawn(kickstart_job, convo_id, delivery_type)])
+
 
             # ✅ Immediately return response to the user
             return jsonify({"message": "Thanks for the info! Your request is being processed..."})
@@ -58,7 +97,8 @@ def chat():
 
 
 def kickstart_job(convo_id, delivery_type):
-
+    sleep(0)
+    db = FirestoreClient.get_client()
     doc_ref = db.collection("conversations").document(convo_id)
     doc = doc_ref.get()
 
@@ -80,6 +120,7 @@ def kickstart_job(convo_id, delivery_type):
             "insights_url": insights_url
         })
 
+        send_email(params['email'])
         socketio.emit("content_ready", {
             "videoUrl": video_url,
             "insightsUrl": insights_url
@@ -90,6 +131,7 @@ def kickstart_job(convo_id, delivery_type):
 # Content Theatre endpoint
 @app.route("/api/content-theatre", methods=["GET"])
 def content_theatre():
+    db = FirestoreClient.get_client()
     doc_ref = db.collection("content-temp-store").document("0")
     doc = doc_ref.get()
 
@@ -143,7 +185,7 @@ def content_theatre():
 @app.route("/pubsub", methods=["POST"])
 def pubsub_listener():
     
-    global video_url, insights_url
+    db = FirestoreClient.get_client()
     envelope = request.get_json()
     
     if not envelope:
@@ -167,6 +209,8 @@ def pubsub_listener():
                 "video_url": video_url,
                 "insights_url": insights_url
             })
+
+            send_email(params['email'])
             # Emit content_ready event
             socketio.emit("content_ready", {
                 "videoUrl": video_url,
@@ -194,4 +238,5 @@ def handle_content_ready(data):
 
 
 if __name__ == "__main__":
+    print("🚀 Starting Flask server on port 8080")
     socketio.run(app, debug=True, host="0.0.0.0", port=8080)

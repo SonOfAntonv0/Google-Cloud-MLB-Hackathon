@@ -6,12 +6,17 @@ import json
 import hashlib
 import time
 import random
+from google.api_core import retry, exceptions
 
 def generate_doc_id(input_str):
     timestamp = str(int(time.time()))  # Current timestamp
     random_str = ''.join(random.choices(string.ascii_letters + string.digits, k=6))  # Random 6-char string
     return f"{timestamp}-{random_str}"
 
+def setup_firestore():
+    cred = credentials.Certificate("path/to/serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+    
 def get_secret(secret_name):
     
     client = secretmanager.SecretManagerServiceClient()
@@ -60,9 +65,12 @@ def list_documents_with_query(db, collection_name, field_name, operator, value):
 
 def update_conversation(db, convo_id, message):
     """Finds an existing conversation or creates a new one, then appends messages."""
+
     doc_ref = db.collection("conversations").document(convo_id)
+
     doc = doc_ref.get()
 
+    print('heyyyy')
     if doc.exists:
         conversation = doc.to_dict().get("conversation", [])
         doc_ref.update({"conversation": conversation + [message]})  # 🔄 Update existing doc

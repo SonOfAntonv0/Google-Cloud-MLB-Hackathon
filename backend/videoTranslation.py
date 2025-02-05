@@ -67,7 +67,7 @@ def upload_file_to_gcs(bucket_name, source_file_path, destination_blob_name):
     blob.upload_from_filename(source_file_path)
     
     print(f"✅ Uploaded {source_file_path} to gs://{bucket_name}/{destination_blob_name}")
-    
+    blob.make_public() 
     return blob.public_url
 
 if __name__ == "__main__":
