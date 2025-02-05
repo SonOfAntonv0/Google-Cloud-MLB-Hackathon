@@ -62,36 +62,7 @@ Handles retrieving and processing video content.
 
 ---
 
-### **3️⃣ Subscription Management**
-Handles user highlight subscriptions.
-
-#### **GET** `/api/subscriptions`
-- **Purpose**: Lists all user subscriptions.
-- **Response**:
-  ```json
-  [
-    {"id": "1", "name": "Shohei Ohtani Home Runs", "disabled": false},
-    {"id": "2", "name": "Top MLB Moments 2023", "disabled": false}
-  ]
-  ```
-
-#### **POST** `/api/subscriptions/<subscription_id>/disable`
-- **Purpose**: Disables a subscription.
-- **Response**:
-  ```json
-  {"message": "Subscription 1 disabled"}
-  ```
-
-#### **DELETE** `/api/subscriptions/<subscription_id>`
-- **Purpose**: Deletes a subscription.
-- **Response**:
-  ```json
-  {"message": "Subscription 1 deleted"}
-  ```
-
----
-
-### **4️⃣ Pub/Sub Event Listener**
+### **3️⃣ Pub/Sub Event Listener**
 Processes scheduled video jobs and triggers WebSocket events.
 
 #### **POST** `/pubsub`
@@ -112,7 +83,7 @@ Processes scheduled video jobs and triggers WebSocket events.
 
 ---
 
-### **5️⃣ WebSocket Events**
+### **4️⃣ WebSocket Events**
 WebSockets are used for **real-time notifications** when content is ready.
 
 - **Event: `"content_ready"`**
@@ -151,9 +122,6 @@ The frontend is a **React application** hosted on **Firebase Hosting**.
 ### **3️⃣ Header.jsx**
 - Displays navigation and user profile.
 - Allows switching between **Chat and Content Theatre**.
-
-### **4️⃣ Subscriptions.jsx**
-- Lists user **subscriptions** and allows them to **disable or delete**.
 
 ---
 
