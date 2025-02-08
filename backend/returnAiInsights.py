@@ -6,9 +6,15 @@ import numpy as np
 import os
 import json
 from google.cloud import storage
+from dotenv import load_dotenv
+
+def global_var(key):
+    load_dotenv()
+    return os.getenv(key) 
 
 def get_ai_insights(video_path, csv_paths, language, is_team):
-    API_KEY = os.getenv("GENAI_API_KEY")
+
+    API_KEY = global_var("GENAI_API_KEY")
     genai.configure(api_key=API_KEY)
     video_file = genai.upload_file(video_path)
 
@@ -26,6 +32,7 @@ def get_ai_insights(video_path, csv_paths, language, is_team):
     Using the data in the csv files and video, generate AI insights about {'the team' if is_team else 'the player'}.
     Provide strengths, weaknesses, and notable statistics in {language}.
     """
+
     print('Generating Insights.....')
     model = genai.GenerativeModel("gemini-1.5-flash")
     generated_response = model.generate_content([video_file, *csv_files, prompt])
@@ -53,6 +60,7 @@ def upload_file_to_gcs(bucket_name, source_file_path, destination_blob_name):
     return blob.public_url
     
 if __name__ == "__main__":
+    
     parser = argparse.ArgumentParser(description="Generate AI Insights for MLB Highlights.")
     parser.add_argument("--player", type=str, help="Player name (if applicable)")
     parser.add_argument("--play", type=str, help="Type of play (e.g., defensive_plays, homeruns)")
@@ -68,7 +76,7 @@ if __name__ == "__main__":
 
     get_ai_insights(video_path[choice], csv_paths, args.language, not args.player)
 
-    bucket_name = 'homeruns-top-players'
+    bucket_name =  global_var("GCS_BUCKET_NAME")
     output_path = '/tmp/insights.json'
     destination_blob = "output/insights.json"
 

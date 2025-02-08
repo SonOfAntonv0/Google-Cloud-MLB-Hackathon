@@ -9,6 +9,11 @@ from google.cloud import speech, translate_v2 as translate, texttospeech
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.audio.AudioClip import concatenate_audioclips, AudioClip, CompositeAudioClip
+from dotenv import load_dotenv
+
+def global_var(key):
+    load_dotenv()
+    return os.getenv(key) 
 
 def extract_audio(video_file, audio_file):
     video = VideoFileClip(video_file)
@@ -101,7 +106,7 @@ if __name__ == "__main__":
 
     extract_audio(video_file, audio_file)
 
-    bucket_name = 'homeruns-top-players'
+    bucket_name =  global_var("GCS_BUCKET_NAME")
     if args.play:
         destination_blob_name = f'{args.play}/{video_name}_audio.wav'
     else:

@@ -1,11 +1,17 @@
 import google.generativeai as genai
 import json
 import re
+import os
+from dotenv import load_dotenv
 
-genai.configure(api_key='AIzaSyAxlDjY7RTAfjWrzlEdnpuEFUiOUj9Pe54')
+def global_var(key):
+    load_dotenv()
+    return os.getenv(key) 
 
 def is_convo_done(conversation_history_strs):
 
+    API_KEY = global_var("GENAI_API_KEY")
+    genai.configure(api_key=API_KEY)
     conversation_history = '\n\n'.join(conversation_history_strs)
     model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -48,6 +54,8 @@ def is_convo_done(conversation_history_strs):
 
 
 def get_params(conversation_history_strs):
+    API_KEY = global_var("GENAI_API_KEY")
+    genai.configure(api_key=API_KEY)
     conversation_history = '\n\n'.join(conversation_history_strs)
     model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -120,6 +128,8 @@ Based on the conversational history, return the following information as a JSON:
 
 def get_llm_response(conversation_history_strs):
 
+    API_KEY = global_var("GENAI_API_KEY")
+    genai.configure(api_key=API_KEY)
     model = genai.GenerativeModel("gemini-1.5-flash")
     conversation_history = '\n\n'.join(conversation_history_strs)
 

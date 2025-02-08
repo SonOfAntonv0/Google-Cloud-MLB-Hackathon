@@ -7,10 +7,15 @@ import json
 import base64
 from google.cloud import firestore 
 import os
+from dotenv import load_dotenv
 
-PROJECT_ID = "cloud-hackathon-venky"
-TOPIC_NAME = "cron-topic"
-REGION = "us-central1"
+def global_var(key):
+    load_dotenv()
+    return os.getenv(key) 
+
+PROJECT_ID =global_var("PROJECT_ID")
+TOPIC_NAME = global_var("TOPIC_NAME")
+REGION = global_var("REGION")
 
 def process_content(params, pubsub_listener = False):
 

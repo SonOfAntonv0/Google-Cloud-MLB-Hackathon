@@ -1,16 +1,14 @@
 from gevent import monkey, spawn, sleep, joinall
 monkey.patch_all()
 
-# Add this before creating the Flask app
 import grpc.experimental.gevent
 grpc.experimental.gevent.init_gevent()
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from genai_utils import get_llm_response, is_convo_done, get_params
 from content_delivery import on_demand, schedule_delivery, process_content
 from firestore_utils import update_conversation
 from flask_socketio import SocketIO
-import threading
 import base64
 import json
 from google.cloud import firestore
@@ -18,12 +16,10 @@ from google.cloud import firestore
 from google.api_core import retry
 from notify import send_email
 import os
-#
+
 app = Flask(__name__)
-#CORS(app, origins="*", supports_credentials=True)
+
 CORS(app, origins=["https://cloud-hackathon-venky.web.app","http://localhost:5173"], supports_credentials=True)
-# socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', logger=True, engineio_logger=True, transports=["websocket", "polling"], ping_timeout=600,  # Increase ping timeout
-#     ping_interval=60)
 
 socketio = SocketIO(
     app, 
@@ -36,8 +32,6 @@ socketio = SocketIO(
     ping_interval=60,
     message_queue='redis://' if os.environ.get('GAE_ENV', '').startswith('standard') else None
 )
-
-#load_dotenv()
 class FirestoreClient:
     _instance = None
     
@@ -82,12 +76,9 @@ def chat():
         if is_convo_done_flag == 'yes':
             delivery_type = val.split(' ')[1].lower()
 
-            # Store the greenlet so we can track it
             joinall([spawn(kickstart_job, convo_id, delivery_type)])
 
-
-            # ✅ Immediately return response to the user
-            return jsonify({"message": "Thanks for the info! Your request is being processed..."})
+            return jsonify({"message": "Thanks for the info! Your request is being processed. You will be notified via email when the content is ready..."})
 
         return jsonify({
             "message": response
@@ -159,28 +150,6 @@ def content_theatre():
 #         "Dodgers vs. Yankees Highlights"
 #     ]
 #     return jsonify(subscriptions)
-
-# @app.route("/api/subscriptions", methods=["GET"])
-# def get_subscriptions():
-#     # Mock data (replace with Firestore fetch)
-#     subscriptions = [
-#         {"id": "1", "name": "Shohei Ohtani Home Runs", "disabled": False},
-#         {"id": "2", "name": "Top MLB Moments 2023", "disabled": False},
-#         {"id": "3", "name": "Dodgers vs. Yankees Highlights", "disabled": True},
-#     ]
-#     return jsonify(subscriptions)
-
-# @app.route("/api/subscriptions/<subscription_id>", methods=["DELETE"])
-# def delete_subscription(subscription_id):
-#     # Delete the subscription from Firestore
-#     # Example: firestore.collection("subscriptions").document(subscription_id).delete()
-#     return jsonify({"message": f"Subscription {subscription_id} deleted"})
-
-# @app.route("/api/subscriptions/<subscription_id>/disable", methods=["POST"])
-# def disable_subscription(subscription_id):
-#     # Update the subscription to disable in Firestore
-#     # Example: firestore.collection("subscriptions").document(subscription_id).update({"disabled": True})
-#     return jsonify({"message": f"Subscription {subscription_id} disabled"})
 
 @app.route("/pubsub", methods=["POST"])
 def pubsub_listener():
